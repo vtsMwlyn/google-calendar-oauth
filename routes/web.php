@@ -24,7 +24,8 @@ Route::get('/', function () {
 });
 
 
-Route::get('/dashboard', [GoogleServiceController::class, 'dashboardWithGoogleCalendarEvents'])->middleware('checkGoogleAuth')->name('dashboard');
+Route::get('/dashboard', [GoogleServiceController::class, 'dashboardWithGoogleCalendarEvents'])
+->middleware('checkGoogleAuth')->name('dashboard');
 
 Route::get('google/redirect', [GoogleServiceController::class, 'redirectToGoogle'])->name('google.redirect');
 Route::get('google/callback', [GoogleServiceController::class, 'handleGoogleCallback']);
