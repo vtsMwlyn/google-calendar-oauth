@@ -12,6 +12,10 @@
         <!-- Validation Errors -->
         <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
+		@if(session()->has('error'))
+			<p class="text-red-600">{{ session('error') }}</p>
+		@endif
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
@@ -51,6 +55,13 @@
                     {{ __('Log in') }}
                 </x-button>
             </div>
+
+			<div class="mt-4">
+				<a href="{{ route('google.redirect') }}" class="shadow-lg py-2 px-4 flex items-center justify-center">
+					<img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" style="width: 20px; margin-right: 10px;">
+					Login with Google
+				</a>
+			</div>
         </form>
     </x-auth-card>
 </x-guest-layout>

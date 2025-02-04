@@ -15,7 +15,18 @@
 
         <!-- Scripts -->
         <script src="{{ asset('js/app.js') }}" defer></script>
+
+		<!-- Tailwind -->
+		<script src="https://cdn.tailwindcss.com"></script>
+
+		<!-- Google calendar UI (unused) -->
+		{{-- <script src="https://apis.google.com/js/api.js"></script> --}}
+
+		<!-- FullCalendar -->
+		<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+	
     </head>
+
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')

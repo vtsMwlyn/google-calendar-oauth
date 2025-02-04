@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Spatie\GoogleCalendar\Facades\GoogleCalendar;
-use App\Http\Controllers\GoogleCalendarController;
+use App\Http\Controllers\GoogleServiceController;
 
 
 /*
@@ -24,13 +24,11 @@ Route::get('/', function () {
 });
 
 
-Route::get('/dashboard', function () {
-	return view('dashboard');
-})->middleware('checkGoogleAuth')->name('dashboard');
+Route::get('/dashboard', [GoogleServiceController::class, 'dashboardWithGoogleCalendarEvents'])->middleware('checkGoogleAuth')->name('dashboard');
 
-Route::get('google/redirect', [GoogleCalendarController::class, 'redirectToGoogle'])->name('google.redirect');
-Route::get('google/callback', [GoogleCalendarController::class, 'handleGoogleCallback']);
-Route::get('google/logout', [GoogleCalendarController::class, 'logout'])->name('google.logout');
+Route::get('google/redirect', [GoogleServiceController::class, 'redirectToGoogle'])->name('google.redirect');
+Route::get('google/callback', [GoogleServiceController::class, 'handleGoogleCallback']);
+Route::get('google/logout', [GoogleServiceController::class, 'logout'])->name('google.logout');
 
 
 require __DIR__ . '/auth.php';
