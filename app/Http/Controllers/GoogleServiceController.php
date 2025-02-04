@@ -193,6 +193,9 @@ class GoogleServiceController extends Controller
 		// 	return redirect()->route('login')->with('error', 'Your session is expired');
 		// }
 
+		$oauthService = new Google_Service_Oauth2($client);
+        $userInfo = $oauthService->userinfo->get();
+
 		// Create a new Google Calendar service object
 		$service = new Google_Service_Calendar($client);
 
@@ -202,7 +205,7 @@ class GoogleServiceController extends Controller
 
 		// Initialize an array to hold all the event data
 		$allEventData = [];
-		$targetCalendarNames = ['Tasks', 'vannestheo@gmail.com']; // Specify the calendar names you want to retrieve events from
+		$targetCalendarNames = [$userInfo->email]; // Specify the calendar names you want to retrieve events from
 
 		foreach ($calendarList->getItems() as $calendar) {
 			$calendarName = $calendar->getSummary();

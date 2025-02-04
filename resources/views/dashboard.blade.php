@@ -60,7 +60,7 @@
 										<tr>
 											<td class="border py-2 px-4">{{ $task['taskList'] }}</td>
 											<td class="border py-2 px-4">{{ $task['title'] }}</td>
-											<td class="border py-2 px-4">{{ \Carbon\Carbon::parse($task['due'])->toDayDateTimeString() }}</td>
+											<td class="border py-2 px-4">{{ \Carbon\Carbon::parse($task['due'])->format('D, F j, Y') }}</td>
 										</tr>
 									@endforeach
 								@else
