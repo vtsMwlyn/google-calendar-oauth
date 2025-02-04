@@ -243,12 +243,16 @@ class GoogleServiceController extends Controller
 			// For each task list, retrieve the tasks
 			$taskListId = $taskList->getId();
 
-			$tasks = $tasksService->tasks->listTasks($taskListId, [
-				// 'maxResults' => 10, // Limit number of tasks to retrieve
-				// 'orderBy' => 'due', // Sort tasks by due date
-			]);
+			$tasks = $tasksService->tasks->listTasks($taskListId);
 
-			foreach ($tasks->getItems() as $task) {
+			$tasksArray = $tasksArray = $tasks->getItems();
+			usort($tasksArray, function($a, $b) {
+				$dueA = $a->getDue() ? strtotime($a->getDue()) : 0;
+				$dueB = $b->getDue() ? strtotime($b->getDue()) : 0;
+				return $dueA - $dueB;
+			});
+
+			foreach ($tasksArray as $task) {
 				$allTaskData[] = [
 					'taskList' => $taskList->getTitle(),
 					'title' => $task->getTitle(),
