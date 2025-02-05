@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Hash;
 
 class GoogleServiceController extends Controller
 {
+	private $google_service_scope = [
+		Google_Service_Oauth2::USERINFO_PROFILE,
+		Google_Service_Oauth2::USERINFO_EMAIL,
+		Google_Service_Calendar::CALENDAR,
+		Google_Service_Tasks::TASKS,
+	];
+
     // Redirect the user to Google's OAuth authorization page
     public function redirectToGoogle()
     {
@@ -20,12 +27,7 @@ class GoogleServiceController extends Controller
         $client->setClientId(env('GOOGLE_CALENDAR_CLIENT_ID'));
         $client->setClientSecret(env('GOOGLE_CALENDAR_CLIENT_SECRET'));
         $client->setRedirectUri(env('GOOGLE_CALENDAR_REDIRECT_URI'));
-        $client->addScope([
-			Google_Service_Calendar::CALENDAR,
-			Google_Service_Tasks::TASKS,
-			Google_Service_Oauth2::USERINFO_PROFILE,
-			Google_Service_Oauth2::USERINFO_EMAIL
-		]);
+        $client->addScope($this->google_service_scope);
 		$client->setAccessType('offline'); // Request offline access to get the refresh token
     	$client->setApprovalPrompt('force'); // Ensures the user always gets a refresh token
 
@@ -41,17 +43,10 @@ class GoogleServiceController extends Controller
 		$client->setClientId(env('GOOGLE_CALENDAR_CLIENT_ID'));
 		$client->setClientSecret(env('GOOGLE_CALENDAR_CLIENT_SECRET'));
 		$client->setRedirectUri(env('GOOGLE_CALENDAR_REDIRECT_URI'));
-		$client->addScope([
-			Google_Service_Calendar::CALENDAR,
-			Google_Service_Tasks::TASKS,
-			Google_Service_Oauth2::USERINFO_PROFILE,
-			Google_Service_Oauth2::USERINFO_EMAIL
-		]);
+		$client->addScope($this->google_service_scope);
 
 		// Exchange the authorization code for access and refresh tokens
 		$token = $client->fetchAccessTokenWithAuthCode($request->code);
-
-		// dd($token);
 
 		if (isset($token['error'])) {
 			return redirect()->route('login')->with('error', 'Google login failed');
@@ -95,22 +90,10 @@ class GoogleServiceController extends Controller
 		return redirect()->route('dashboard');
 	}
 
-	public function refreshGoogleAccessToken()
+	public function refreshGoogleAccessToken(Google_Client $client)
 	{
 		// Set up the Google client
-		$client = new Google_Client();
-		$client->setClientId(env('GOOGLE_CLIENT_ID'));
-		$client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
-		$client->setRedirectUri(env('GOOGLE_REDIRECT_URI'));
-		$client->addScope([
-			Google_Service_Calendar::CALENDAR,
-			Google_Service_Oauth2::USERINFO_PROFILE,
-			Google_Service_Oauth2::USERINFO_EMAIL,
-			Google_Service_Tasks::TASKS,
-		]);
-
-		$accessToken = session('google_access_token');
-		$client->setAccessToken($accessToken);
+		$client->addScope($this->google_service_scope);
 
 		// Retrieve stored refresh token
 		$refreshToken = session('google_refresh_token') ?? User::where('email', session('google_user_info.email'))->value('google_refresh_token');
@@ -119,12 +102,8 @@ class GoogleServiceController extends Controller
 			return response()->json(['error' => 'No refresh token available. Please re-authenticate.'], 401);
 		}
 
-		// $client->setRefreshToken($refreshToken); // ✅ Explicitly set the refresh token
-
 		// Check if the access token is expired
 		if ($client->isAccessTokenExpired()) {
-			return 'hiya expired';
-
 			// Refresh the access token
 			$newAccessToken = $client->fetchAccessTokenWithRefreshToken($refreshToken);
 
@@ -144,7 +123,6 @@ class GoogleServiceController extends Controller
 			session()->save();
 		}
 	}
-
 
 
 	public function logout()
@@ -173,19 +151,20 @@ class GoogleServiceController extends Controller
 
 	public function dashboardWithGoogleCalendarEvents()
 	{
-		// $this->refreshGoogleAccessToken();
-
 		// Retrieve the access token from the session
 		$accessToken = session('google_access_token');
 
 		// Set up the Google client with the stored access token
 		$client = new Google_Client();
-		// $client->setAccessToken($accessToken['access_token']);
+		$client->setClientId(env('GOOGLE_CALENDAR_CLIENT_ID'));
+        $client->setClientSecret(env('GOOGLE_CALENDAR_CLIENT_SECRET'));
+        $client->setRedirectUri(env('GOOGLE_CALENDAR_REDIRECT_URI'));
+
 		$client->setAccessToken($accessToken);
 
-		// // Check if the access token is still valid
+		// Check if the access token is still valid
 		if ($client->isAccessTokenExpired()) {
-			$this->refreshGoogleAccessToken();
+			$this->refreshGoogleAccessToken($client);
 		}
 
 		$oauthService = new Google_Service_Oauth2($client);
